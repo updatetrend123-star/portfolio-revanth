@@ -17,7 +17,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { useAuth } from '@/src/context/AuthContext';
-import { portfolioData } from '@/src/constants';
+import { usePortfolio } from '@/src/context/PortfolioContext';
 import { 
   LineChart, 
   Line, 
@@ -45,7 +45,27 @@ const analyticsData = [
 
 export default function AdminDashboard() {
   const { logout, user } = useAuth();
+  const { data: portfolioData, addProject, deleteProject, updatePersonal } = usePortfolio();
   const [activeTab, setActiveTab] = useState('Overview');
+  const [showAddProject, setShowAddProject] = useState(false);
+  const [newProject, setNewProject] = useState({
+    title: '',
+    description: '',
+    tech: '',
+    image: 'https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&q=80&w=800',
+    category: 'Web App'
+  });
+
+  const handleAddProject = (e: React.FormEvent) => {
+    e.preventDefault();
+    addProject({
+      ...newProject,
+      tech: newProject.tech.split(',').map(t => t.trim()),
+      tags: newProject.tech.split(',').map(t => t.trim())
+    });
+    setShowAddProject(false);
+    setNewProject({ title: '', description: '', tech: '', image: 'https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&q=80&w=800', category: 'Web App' });
+  };
 
   const stats = [
     { label: 'Total Visits', value: '12.4k', trend: '+14%', icon: <Monitor /> },
@@ -114,7 +134,12 @@ export default function AdminDashboard() {
                 <Bell size={20} />
                 <span className="absolute top-3 right-3 w-2 h-2 bg-accent rounded-full border-2 border-primary" />
             </button>
-            <button className="flex-grow sm:flex-initial flex items-center justify-center gap-2 px-6 py-3 bg-accent text-primary rounded-2xl font-bold text-sm shadow-lg shadow-accent/20">
+            <button 
+              onClick={() => {
+                if (activeTab === 'Projects' || activeTab === 'Overview') setShowAddProject(true);
+              }}
+              className="flex-grow sm:flex-initial flex items-center justify-center gap-2 px-6 py-3 bg-accent text-primary rounded-2xl font-bold text-sm shadow-lg shadow-accent/20"
+            >
                 <Plus size={18} />
                 <span className="whitespace-nowrap">New {activeTab.slice(0, -1)}</span>
             </button>
@@ -123,6 +148,64 @@ export default function AdminDashboard() {
             </button>
           </div>
         </header>
+
+        {showAddProject && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-primary/80 backdrop-blur-sm"
+          >
+            <div className="glass-panel w-full max-w-2xl p-8 sm:p-12 rounded-[3rem] border-white/10 relative overflow-y-auto max-h-[90vh]">
+               <button onClick={() => setShowAddProject(false)} className="absolute top-8 right-8 text-beige/30 hover:text-accent transition-colors"><Plus size={32} className="rotate-45" /></button>
+               <h2 className="text-3xl font-black mb-8">Deploy New Project</h2>
+               
+               <form onSubmit={handleAddProject} className="space-y-6">
+                 <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-accent ml-2 text-primary font-black bg-accent px-2 py-0.5 rounded">Title</label>
+                   <input 
+                    required
+                    value={newProject.title}
+                    onChange={(e) => setNewProject({...newProject, title: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-accent/40" 
+                    placeholder="Project Name"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-accent ml-2">Description</label>
+                   <textarea 
+                    required
+                    value={newProject.description}
+                    onChange={(e) => setNewProject({...newProject, description: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-accent/40 h-32 resize-none" 
+                    placeholder="Short summary..."
+                   />
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-accent ml-2">Technologies (comma separated)</label>
+                      <input 
+                        required
+                        value={newProject.tech}
+                        onChange={(e) => setNewProject({...newProject, tech: e.target.value})}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-accent/40" 
+                        placeholder="React, Node.js, Tailwind"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-accent ml-2">Image URL</label>
+                      <input 
+                        value={newProject.image}
+                        onChange={(e) => setNewProject({...newProject, image: e.target.value})}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-accent/40" 
+                        placeholder="https://..."
+                      />
+                    </div>
+                 </div>
+                 <button type="submit" className="w-full py-5 bg-accent text-primary rounded-2xl font-black text-lg shadow-xl shadow-accent/20">Bootstrap Project</button>
+               </form>
+            </div>
+          </motion.div>
+        )}
 
         {activeTab === 'Overview' && (
           <motion.div 
@@ -214,7 +297,7 @@ export default function AdminDashboard() {
                                         <div className="text-[10px] text-beige/40">ID: PRJ-00{p.id} • Posted 2 days ago</div>
                                     </div>
                                 </div>
-                                <button className="text-accent font-black tracking-widest text-[10px] uppercase group-hover:underline shrink-0 ml-4">Edit</button>
+                                <button className="text-accent font-black tracking-widest text-[10px] uppercase group-hover:underline shrink-0 ml-4" onClick={() => setActiveTab('Projects')}>Edit</button>
                             </div>
                         ))}
                     </div>
@@ -243,7 +326,151 @@ export default function AdminDashboard() {
           </motion.div>
         )}
 
-        {activeTab !== 'Overview' && (
+        {activeTab === 'Projects' && (
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-8"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-black">Manage Projects</h2>
+              <button className="flex items-center gap-2 px-6 py-3 bg-accent text-primary rounded-2xl font-bold text-sm shadow-xl shadow-accent/20">
+                <Plus size={18} />
+                Add Project
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {portfolioData.projects.map((project) => (
+                <div key={project.id} className="glass-panel overflow-hidden rounded-[2.5rem] border-white/5 flex flex-col">
+                  <div className="h-48 w-full relative group">
+                    <img src={project.image} className="w-full h-full object-cover" alt={project.title} />
+                    <div className="absolute inset-0 bg-primary/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                       <button className="p-3 bg-accent text-primary rounded-xl font-bold">Edit</button>
+                       <button onClick={() => deleteProject(project.id)} className="p-3 bg-red-500/20 text-red-500 rounded-xl font-bold">Delete</button>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-bold text-lg mb-2">{project.title}</h3>
+                    <p className="text-beige/40 text-sm line-clamp-2 mb-4">{project.description}</p>
+                    <div className="flex flex-wrap gap-2">
+                       {project.tags.map(tag => (
+                         <span key={tag} className="text-[9px] font-black uppercase tracking-widest px-3 py-1 bg-white/5 rounded-full text-accent">{tag}</span>
+                       ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'Testimonials' && (
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-8"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-black">Global Feedback</h2>
+              <button className="flex items-center gap-2 px-6 py-3 bg-accent text-primary rounded-2xl font-bold text-sm shadow-xl shadow-accent/20">
+                <Plus size={18} />
+                New Review
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {portfolioData.testimonials.map((test, i) => (
+                <div key={i} className="glass-panel p-6 sm:p-8 rounded-[2rem] border-white/5 flex items-center justify-between gap-6">
+                  <div className="flex items-center gap-6">
+                    <div className="w-14 h-14 bg-secondary rounded-2xl flex items-center justify-center font-black text-accent text-xl shrink-0 uppercase">
+                      {test.author[0]}
+                    </div>
+                    <div>
+                       <div className="font-bold text-lg">{test.author}</div>
+                       <div className="text-xs text-beige/30 mb-2 uppercase tracking-widest font-black">{test.role}</div>
+                       <p className="text-beige/60 text-sm lg:max-w-xl italic">"{test.quote}"</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                     <button className="p-2 hover:text-accent transition-colors"><Settings size={18} /></button>
+                     <button className="p-2 hover:text-red-400 transition-colors"><LogOut size={18} className="rotate-90" /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'Settings' && (
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-12 max-w-4xl"
+          >
+             <div className="glass-panel p-8 sm:p-12 rounded-[3.5rem] border-white/5">
+                <h3 className="text-2xl font-black mb-8 border-b border-white/5 pb-4">Personal Nexus</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-accent ml-2">Identity Name</label>
+                    <input 
+                      value={portfolioData.personal.name}
+                      onChange={(e) => updatePersonal({ name: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:border-accent/40 focus:outline-none font-bold"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-accent ml-2">Primary Role</label>
+                    <input 
+                      value={portfolioData.personal.role}
+                      onChange={(e) => updatePersonal({ role: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:border-accent/40 focus:outline-none font-bold"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-accent ml-2">Digital Location</label>
+                    <input 
+                      value={portfolioData.personal.location}
+                      onChange={(e) => updatePersonal({ location: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:border-accent/40 focus:outline-none font-bold"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-accent ml-2">Public Email</label>
+                    <input 
+                      value={portfolioData.personal.email}
+                      onChange={(e) => updatePersonal({ email: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:border-accent/40 focus:outline-none font-bold"
+                    />
+                  </div>
+                </div>
+                <div className="mt-8 space-y-3">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-accent ml-2">Legacy About Section</label>
+                   <textarea 
+                    value={portfolioData.personal.about}
+                    onChange={(e) => updatePersonal({ about: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:border-accent/40 focus:outline-none font-bold h-40 resize-none"
+                   />
+                </div>
+             </div>
+
+             <div className="glass-panel p-8 sm:p-12 rounded-[3.5rem] border-white/5 bg-red-500/5">
+                <h3 className="text-2xl font-black mb-4 text-red-500">Danger Zone</h3>
+                <p className="text-beige/40 mb-8 font-medium">Resetting the Nexus will restore all data to default values. This action is permanent for your current local session.</p>
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem('yrk_portfolio_data');
+                    window.location.reload();
+                  }}
+                  className="px-8 py-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"
+                >
+                  Factory Reset Portfolio
+                </button>
+             </div>
+          </motion.div>
+        )}
+
+        {['Analytics', 'Feedback'].includes(activeTab) && (
              <div className="flex flex-col items-center justify-center py-40 opacity-20">
                 <Settings size={100} className="animate-spin-slow mb-10" />
                 <h2 className="text-3xl font-black tracking-tight text-center">{activeTab} module is under construction</h2>

@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import Hero3D from '@/src/components/3d/Hero3D';
 import FloatingIcons from '@/src/components/FloatingIcons';
-import { portfolioData } from '@/src/constants';
+import { usePortfolio } from '@/src/context/PortfolioContext';
 import { 
   ArrowRight, 
   Code2, 
@@ -41,6 +41,7 @@ const LucideIcon = ({ name, size = 24, className = "" }: { name: string, size?: 
 };
 
 export default function Home() {
+  const { data: portfolioData } = usePortfolio();
   const stats = [
     { label: 'Years Exp', value: '1+', icon: <Award className="text-accent" /> },
     { label: 'Projects', value: '15+', icon: <LayoutIcon className="text-accent" /> },

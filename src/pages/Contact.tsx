@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { portfolioData } from '@/src/constants';
+import { usePortfolio } from '@/src/context/PortfolioContext';
 import { Send, Mail, MapPin, Phone, Github, Linkedin, Instagram, ArrowRight, Loader2, MessageCircle } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
 export default function Contact() {
+  const { data: portfolioData } = usePortfolio();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);

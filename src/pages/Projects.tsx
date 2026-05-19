@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { portfolioData } from '@/src/constants';
+import { usePortfolio } from '@/src/context/PortfolioContext';
 import { ExternalLink, Github, Search, Filter, Layers, ArrowRight, MousePointer2 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { Link } from 'react-router-dom';
 
 export default function Projects() {
+  const { data: portfolioData } = usePortfolio();
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 

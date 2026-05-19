@@ -11,6 +11,7 @@ import Layout from '@/src/components/Layout';
 import ScrollToTop from '@/src/components/ScrollToTop';
 import ProtectedRoute from '@/src/components/ProtectedRoute';
 import { AuthProvider } from '@/src/context/AuthContext';
+import { PortfolioProvider } from '@/src/context/PortfolioContext';
 
 // Pages
 import Home from '@/src/pages/Home';
@@ -23,7 +24,8 @@ import AdminDashboard from '@/src/pages/Admin/Dashboard';
 export default function App() {
   return (
     <AuthProvider>
-      <Router>
+      <PortfolioProvider>
+        <Router>
         <ScrollToTop />
         <div className="flex flex-col min-h-screen">
           <Navbar />
@@ -50,6 +52,7 @@ export default function App() {
           <Footer />
         </div>
       </Router>
+      </PortfolioProvider>
     </AuthProvider>
   );
 }

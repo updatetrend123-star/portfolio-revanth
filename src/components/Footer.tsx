@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Github, Linkedin, Instagram, Mail, Heart, MapPin } from 'lucide-react';
-import { portfolioData } from '@/src/constants';
+import { usePortfolio } from '@/src/context/PortfolioContext';
 
 export default function Footer() {
+  const { data: portfolioData } = usePortfolio();
   const currentYear = new Date().getFullYear();
 
   return (
