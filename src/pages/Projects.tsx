@@ -4,6 +4,7 @@ import { usePortfolio } from '@/src/context/PortfolioContext';
 import { ExternalLink, Github, Search, Filter, Layers, ArrowRight, MousePointer2 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { Link } from 'react-router-dom';
+import LazyImage from '@/src/components/LazyImage';
 
 export default function Projects() {
   const { data: portfolioData } = usePortfolio();
@@ -97,9 +98,10 @@ export default function Projects() {
               >
                  <div className="glass-panel overflow-hidden rounded-[2.5rem] sm:rounded-[3rem] border-white/5 flex flex-col h-full hover:border-accent/30 transition-all duration-500 hover:shadow-[0_30px_80px_rgba(0,0,0,0.6)]">
                    <div className="relative aspect-[16/10] overflow-hidden">
-                        <img 
+                        <LazyImage 
                             src={project.image} 
                             alt={project.title} 
+                            wrapperClassName="w-full h-full"
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 opacity-60"
                         />
                          <div className="absolute top-4 sm:top-6 left-4 sm:left-6 flex gap-2">

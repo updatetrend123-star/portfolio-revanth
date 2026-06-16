@@ -1,0 +1,134 @@
+{
+  "entities": {
+    "Personal": {
+      "title": "Personal",
+      "description": "Personal biography and statistics",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "tagline": { "type": "string" },
+        "about": { "type": "string" },
+        "location": { "type": "string" },
+        "email": { "type": "string" },
+        "resumeUrl": { "type": "string" },
+        "stats": { "type": "object" }
+      },
+      "required": ["id"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Portfolio project listing",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "tech": { "type": "array" },
+        "image": { "type": "string" },
+        "github": { "type": "string" },
+        "link": { "type": "string" },
+        "featured": { "type": "boolean" },
+        "category": { "type": "string" },
+        "liveDemo": { "type": "boolean" }
+      },
+      "required": ["title", "description"]
+    },
+    "Testimonial": {
+      "title": "Testimonial",
+      "description": "Client testimonial and rating",
+      "type": "object",
+      "properties": {
+        "quote": { "type": "string" },
+        "author": { "type": "string" },
+        "role": { "type": "string" },
+        "rating": { "type": "number" },
+        "avatar": { "type": "string" }
+      },
+      "required": ["quote", "author", "role"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "Services offered outline",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number" },
+        "title": { "type": "string" },
+        "tagline": { "type": "string" },
+        "description": { "type": "string" },
+        "features": { "type": "array" },
+        "color": { "type": "string" },
+        "highlighted": { "type": "boolean" },
+        "icon": { "type": "string" }
+      },
+      "required": ["id", "title"]
+    },
+    "SkillGroup": {
+      "title": "SkillGroup",
+      "description": "Group of professional skills",
+      "type": "object",
+      "properties": {
+        "category": { "type": "string" },
+        "items": { "type": "array" }
+      },
+      "required": ["category", "items"]
+    },
+    "Experience": {
+      "title": "Experience",
+      "description": "Employment milestone / educational experience",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number" },
+        "title": { "type": "string" },
+        "company": { "type": "string" },
+        "location": { "type": "string" },
+        "period": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "achievements": { "type": "array" }
+      },
+      "required": ["title", "company"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Administrator account context",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "password": { "type": "string" },
+        "name": { "type": "string" }
+      },
+      "required": ["email", "password"]
+    }
+  },
+  "firestore": {
+    "personal": {
+      "schema": "Personal",
+      "description": "Holds biographical profile information"
+    },
+    "projects": {
+      "schema": "Project",
+      "description": "Holds the project listing entries"
+    },
+    "testimonials": {
+      "schema": "Testimonial",
+      "description": "Holds testimonials from clients"
+    },
+    "services": {
+      "schema": "Service",
+      "description": "List of specialized services"
+    },
+    "skills": {
+      "schema": "SkillGroup",
+      "description": "Categorized professional skills"
+    },
+    "experience": {
+      "schema": "Experience",
+      "description": "Milestones of work experience"
+    },
+    "users": {
+      "schema": "User",
+      "description": "Registered admins for dashboard operations"
+    }
+  }
+}

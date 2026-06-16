@@ -85,7 +85,7 @@ export default function Services() {
         {/* Call to Action Banner */}
         <section className="relative rounded-[3rem] md:rounded-[5rem] overflow-hidden bg-accent p-8 sm:p-12 md:p-24 text-primary text-center mx-4 sm:mx-0">
           <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none mix-blend-overlay">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent animate-pulse-slow" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#ffffff_0%,transparent_70%)] animate-pulse-slow" />
           </div>
           <h2 className="text-4xl sm:text-5xl md:text-8xl font-black mb-8 tracking-tighter leading-none">
             Ready to Build <br /> Something Epic?

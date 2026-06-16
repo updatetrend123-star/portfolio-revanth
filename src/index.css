@@ -19,6 +19,10 @@
   50% { transform: translateY(-20px); }
 }
 
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
 @layer base {
   body {
     @apply bg-primary text-beige font-sans selection:bg-accent selection:text-primary;

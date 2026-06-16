@@ -47,14 +47,13 @@ function FloatingShapes() {
 
 export default function Hero3D() {
   return (
-    <div className="absolute inset-0 -z-10 bg-primary overflow-hidden">
+    <div className="absolute inset-0 -z-10 bg-transparent overflow-hidden">
       <Canvas camera={{ position: [0, 0, 5], fov: 75 }} dpr={[1, 2]}>
         <ambientLight intensity={0.5} />
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
         <pointLight position={[-10, -10, -10]} color="#A7AA63" intensity={1} />
         
         <FloatingShapes />
-        <Background />
         
         <Environment preset="city" />
         <OrbitControls enableZoom={false} enablePan={false} />

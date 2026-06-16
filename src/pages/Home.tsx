@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import Hero3D from '@/src/components/3d/Hero3D';
 import FloatingIcons from '@/src/components/FloatingIcons';
 import { usePortfolio } from '@/src/context/PortfolioContext';
+import heroBackground from '@/src/assets/images/hero_background_1781600758179.jpg';
 import { 
   ArrowRight, 
   Code2, 
@@ -31,6 +32,7 @@ import {
   Search
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import LazyImage from '@/src/components/LazyImage';
 import { cn } from '@/src/lib/utils';
 import * as Icons from 'lucide-react';
 
@@ -41,18 +43,44 @@ const LucideIcon = ({ name, size = 24, className = "" }: { name: string, size?: 
 };
 
 export default function Home() {
-  const { data: portfolioData } = usePortfolio();
+  const { data: portfolioData, isLoading } = usePortfolio();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-primary flex items-center justify-center">
+        <motion.div 
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className="text-accent font-black text-4xl italic tracking-tighter"
+        >
+          RYK
+        </motion.div>
+      </div>
+    );
+  }
+
   const stats = [
-    { label: 'Years Exp', value: '1+', icon: <Award className="text-accent" /> },
-    { label: 'Projects', value: '15+', icon: <LayoutIcon className="text-accent" /> },
-    { label: 'Clients', value: '10+', icon: <Users className="text-accent" /> },
-    { label: 'Uptime', value: '100%', icon: <Zap className="text-accent" /> },
+    { label: 'Years Exp', value: portfolioData.personal.stats?.years || '1+', icon: <Award className="text-accent" /> },
+    { label: 'Projects', value: portfolioData.personal.stats?.projects || '15+', icon: <LayoutIcon className="text-accent" /> },
+    { label: 'Clients', value: portfolioData.personal.stats?.clients || '10+', icon: <Users className="text-accent" /> },
+    { label: 'Precision', value: portfolioData.personal.stats?.lines || '20k+', icon: <Zap className="text-accent" /> },
   ];
 
   return (
     <div className="relative overflow-hidden">
       {/* Immersive Hero Section */}
       <section className="relative min-h-[100vh] flex items-center px-4 md:px-8 py-20">
+        {/* Ambient Tech Background Image */}
+        <div className="absolute inset-0 -z-20 overflow-hidden bg-primary w-full h-full">
+          <img
+            src={heroBackground}
+            alt="Revanth Kumar Tech Background"
+            className="w-full h-full object-cover object-center opacity-[0.22] absolute inset-0 pointer-events-none select-none"
+            loading="eager"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/30 to-primary" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#121A1B_85%)]" />
+        </div>
         <Hero3D />
         <FloatingIcons />
         
@@ -129,7 +157,7 @@ export default function Home() {
           transition={{ duration: 2, repeat: Infinity }}
           className="absolute bottom-10 left-1/2 -translate-x-1/2 text-accent/30 hidden md:block"
         >
-          <div className="w-6 h-10 border-2 border-accent/20 rounded-full flex justify-center p-2">
+          <div className="w-0 h-0 overflow-hidden">
             <div className="w-1.5 h-1.5 bg-accent rounded-full" />
           </div>
         </motion.div>
@@ -153,8 +181,8 @@ export default function Home() {
               </p>
               
               <div className="grid grid-cols-2 gap-4 md:gap-6 max-w-lg mx-auto xl:mx-0">
-                {stats.map((stat, i) => (
-                  <div key={i} className="glass-panel p-6 rounded-[2rem] group hover:border-accent/40 transition-all">
+                {stats.map((stat) => (
+                  <div key={stat.label} className="glass-panel p-6 rounded-[2rem] group hover:border-accent/40 transition-all">
                     <div className="mb-4 group-hover:scale-110 transition-transform flex justify-center xl:justify-start">{stat.icon}</div>
                     <div className="text-2xl sm:text-3xl font-black mb-1">{stat.value}</div>
                     <div className="text-[10px] font-bold uppercase tracking-widest text-beige/30">{stat.label}</div>
@@ -170,7 +198,7 @@ export default function Home() {
               className="lg:col-span-12 xl:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-8"
             >
               {portfolioData.skills.map((group, i) => (
-                <div key={i} className="glass-panel p-8 rounded-[2.5rem] border-white/5 relative overflow-hidden group">
+                <div key={group.category} className="glass-panel p-8 rounded-[2.5rem] border-white/5 relative overflow-hidden group">
                   <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                     {i % 2 === 0 ? <Cpu size={80} /> : <Globe size={80} />}
                   </div>
@@ -205,7 +233,7 @@ export default function Home() {
           <div className="space-y-8 md:space-y-12">
             {portfolioData.experience.map((exp, i) => (
               <motion.div
-                key={exp.id}
+                key={exp._id || exp.id || i}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -250,8 +278,8 @@ export default function Home() {
                  </div>
                  
                  <div className="mt-10 md:mt-12 pt-8 md:pt-10 border-t border-white/5 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                    {exp.achievements.map((ach, idx) => (
-                        <div key={idx} className="flex gap-4 items-start bg-white/5 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5">
+                    {exp.achievements.map((ach) => (
+                        <div key={ach.substring(0, 32)} className="flex gap-4 items-start bg-white/5 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5">
                             <CheckCircle2 className="text-accent shrink-0" size={18} />
                             <p className="text-xs sm:text-sm text-beige/70 font-medium leading-relaxed">{ach}</p>
                         </div>
@@ -280,16 +308,17 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             {portfolioData.projects.filter(p => p.featured).slice(0, 4).map((project, i) => (
               <motion.div
-                key={project.id}
+                key={project._id || project.id || i}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 className="group relative h-[450px] sm:h-[550px] md:h-[650px] overflow-hidden rounded-[2.5rem] sm:rounded-[3.5rem] bg-[#0d1213] border border-white/5"
               >
-                <img
+                <LazyImage
                   src={project.image}
                   alt={project.title}
+                  wrapperClassName="w-full h-full"
                   className="w-full h-full object-cover opacity-50 group-hover:scale-110 group-hover:opacity-70 transition-all duration-1000 ease-out"
                 />
                 
@@ -350,9 +379,9 @@ export default function Home() {
             }}
             className="flex gap-8 px-4"
           >
-            {[...portfolioData.testimonials, ...portfolioData.testimonials, ...portfolioData.testimonials].map((test, i) => (
+            {[...portfolioData.testimonials, ...portfolioData.testimonials, ...portfolioData.testimonials].map((test, index) => (
               <div 
-                key={i} 
+                key={`testimonial-marquee-${test._id || test.author}-${index}`} 
                 className="w-[300px] sm:w-[450px] shrink-0 glass-panel p-8 sm:p-12 rounded-[2.5rem] sm:rounded-[3.5rem] relative border-white/5 hover:border-accent/30 transition-all flex flex-col justify-between"
               >
                 <div className="absolute top-10 right-10 opacity-5">
@@ -360,8 +389,8 @@ export default function Home() {
                 </div>
                 
                 <div className="flex gap-1 mb-6">
-                  {[...Array(test.rating)].map((_, idx) => (
-                    <Star key={idx} size={14} className="fill-accent text-accent" />
+                  {Array.from({ length: test.rating }).map((_, starIdx) => (
+                    <Star key={`star-${test._id || test.author}-${index}-${starIdx}`} size={14} className="fill-accent text-accent" />
                   ))}
                 </div>
 
@@ -370,9 +399,18 @@ export default function Home() {
                 </p>
 
                 <div className="flex items-center gap-4 pt-8 border-t border-white/5">
-                  <div className="w-12 h-12 bg-secondary rounded-2xl flex items-center justify-center font-black text-accent shrink-0 uppercase tracking-tighter shadow-lg">
-                    {test.author[0]}
-                  </div>
+                  {test.avatar ? (
+                    <LazyImage 
+                      src={test.avatar} 
+                      alt={test.author}
+                      wrapperClassName="w-12 h-12 rounded-2xl shrink-0 shadow-lg"
+                      className="w-full h-full object-cover" 
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-secondary rounded-2xl flex items-center justify-center font-black text-accent shrink-0 uppercase tracking-tighter shadow-lg">
+                      {test.author[0]}
+                    </div>
+                  )}
                   <div>
                     <div className="font-bold text-base sm:text-lg">{test.author}</div>
                     <div className="text-[10px] uppercase font-black tracking-widest text-beige/30">{test.role}</div>
