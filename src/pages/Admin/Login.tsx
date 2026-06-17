@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useAuth } from '@/src/context/AuthContext';
 import { Lock, Mail, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
+import SEO from '@/src/components/SEO';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -31,6 +32,7 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-primary flex items-center justify-center p-6 bg-[radial-gradient(circle_at_center,#505039_0%,transparent_70%)]">
+      <SEO title="Admin Login" description="Secure administration control panel login." />
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}

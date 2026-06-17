@@ -6,6 +6,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { lazy, Suspense } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
 import Navbar from '@/src/components/Navbar';
 import Footer from '@/src/components/Footer';
 import Layout from '@/src/components/Layout';
@@ -52,37 +53,39 @@ export default function App() {
   return (
     <AuthProvider>
       <PortfolioProvider>
-        <Router>
-        <ScrollToTop />
-        <Toaster position="top-right" theme="dark" richColors />
-        <div className="flex flex-col min-h-screen bg-primary text-beige">
-          <Navbar />
-          <Suspense fallback={<PageLoader />}>
-            <AnimatePresence mode="wait">
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Layout><Home /></Layout>} />
-                <Route path="/projects" element={<Layout><Projects /></Layout>} />
-                <Route path="/services" element={<Layout><Services /></Layout>} />
-                <Route path="/contact" element={<Layout><Contact /></Layout>} />
-                
-                {/* Admin Routes */}
-                <Route path="/login" element={<Layout><AdminLogin /></Layout>} />
-                <Route path="/admin/login" element={<Layout><AdminLogin /></Layout>} />
-                <Route path="/admin" element={
-                  <ProtectedRoute>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                } />
-                
-                {/* Fallback */}
-                <Route path="*" element={<Layout><Home /></Layout>} />
-              </Routes>
-            </AnimatePresence>
-          </Suspense>
-          <Footer />
-        </div>
-      </Router>
+        <HelmetProvider>
+          <Router>
+          <ScrollToTop />
+          <Toaster position="top-right" theme="dark" richColors />
+          <div className="flex flex-col min-h-screen bg-primary text-beige">
+            <Navbar />
+            <Suspense fallback={<PageLoader />}>
+              <AnimatePresence mode="wait">
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={<Layout><Home /></Layout>} />
+                  <Route path="/projects" element={<Layout><Projects /></Layout>} />
+                  <Route path="/services" element={<Layout><Services /></Layout>} />
+                  <Route path="/contact" element={<Layout><Contact /></Layout>} />
+                  
+                  {/* Admin Routes */}
+                  <Route path="/login" element={<Layout><AdminLogin /></Layout>} />
+                  <Route path="/admin/login" element={<Layout><AdminLogin /></Layout>} />
+                  <Route path="/admin" element={
+                    <ProtectedRoute>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Fallback */}
+                  <Route path="*" element={<Layout><Home /></Layout>} />
+                </Routes>
+              </AnimatePresence>
+            </Suspense>
+            <Footer />
+          </div>
+        </Router>
+        </HelmetProvider>
       </PortfolioProvider>
     </AuthProvider>
   );

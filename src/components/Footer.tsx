@@ -1,11 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Github, Linkedin, Instagram, Mail, MapPin, LogOut } from 'lucide-react';
+import { Github, Linkedin, Instagram, Mail, MapPin } from 'lucide-react';
 import { usePortfolio } from '@/src/context/PortfolioContext';
-import { useAuth } from '@/src/context/AuthContext';
 
 export default function Footer() {
   const { data: portfolioData } = usePortfolio();
-  const { isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const currentYear = new Date().getFullYear();
 
@@ -37,10 +35,10 @@ export default function Footer() {
                   rel="noreferrer"
                   className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-beige/50 hover:bg-accent hover:text-primary hover:border-accent transition-all"
                 >
-                  {s.name === 'Github' && <Github size={18} />}
-                  {s.name === 'Linkedin' && <Linkedin size={18} />}
-                  {s.name === 'Instagram' && <Instagram size={18} />}
-                  {s.name === 'Email' && <Mail size={18} />}
+                  {s.name.toLowerCase() === 'github' && <Github size={18} />}
+                  {s.name.toLowerCase() === 'linkedin' && <Linkedin size={18} />}
+                  {s.name.toLowerCase() === 'instagram' && <Instagram size={18} />}
+                  {s.name.toLowerCase() === 'email' && <Mail size={18} />}
                 </a>
               ))}
             </div>
@@ -52,18 +50,7 @@ export default function Footer() {
               <li><Link to="/" className="text-beige/60 hover:text-accent transition-colors">Home</Link></li>
               <li><Link to="/projects" className="text-beige/60 hover:text-accent transition-colors">Portfolio</Link></li>
               <li><Link to="/services" className="text-beige/60 hover:text-accent transition-colors">Services</Link></li>
-              {isAuthenticated ? (
-                <li>
-                  <button 
-                    onClick={logout}
-                    className="text-red-400 hover:text-red-300 font-bold transition-colors cursor-pointer text-left"
-                  >
-                    Logout
-                  </button>
-                </li>
-              ) : (
-                <li><Link to="/login" className="text-beige/60 hover:text-accent transition-colors">Admin Login</Link></li>
-              )}
+              <li><Link to="/contact" className="text-beige/60 hover:text-accent transition-colors">Contact</Link></li>
             </ul>
           </div>
 
@@ -85,15 +72,6 @@ export default function Footer() {
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-beige/40">
           <p className="font-medium font-sans">© {currentYear} {portfolioData.personal.name}. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            {isAuthenticated && (
-              <button 
-                onClick={logout}
-                className="flex items-center gap-2 text-red-400 hover:text-red-300 font-bold transition-colors cursor-pointer bg-red-400/5 hover:bg-red-400/10 px-4 py-2 rounded-xl border border-red-500/10 text-xs uppercase tracking-wider"
-              >
-                <LogOut size={12} />
-                <span>Logout</span>
-              </button>
-            )}
             <p className="flex items-center gap-2 font-medium">
               Built with precision & passion.
             </p>

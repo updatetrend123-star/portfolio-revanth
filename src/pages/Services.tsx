@@ -3,12 +3,18 @@ import { portfolioData } from '@/src/constants';
 import { Check, Sparkles, Rocket, Zap, Search, ShieldCheck } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { Link } from 'react-router-dom';
+import SEO from '@/src/components/SEO';
 
 export default function Services() {
   const icons = [<Rocket />, <Zap />, <Search />, <ShieldCheck />];
 
   return (
     <div className="bg-primary min-h-screen pb-32 px-6">
+      <SEO 
+        title="Services" 
+        description="High-performance modern web engineering solutions. Discover services including Next-Gen Web Applications, API Integrations, SEO, and Performance Optimizations."
+        keywords={['Web Engineering Services', 'Web Development Consulting', 'Technical Consulting', 'Web Optimization Services']}
+      />
       <div className="max-w-7xl mx-auto pt-32">
       <header className="mb-24 text-center">
           <motion.div

@@ -6,6 +6,7 @@ import { cn } from '@/src/lib/utils';
 import { db } from '@/src/lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
+import SEO from '@/src/components/SEO';
 
 export default function Contact() {
   const { data: portfolioData } = usePortfolio();
@@ -53,6 +54,11 @@ export default function Contact() {
 
   return (
     <div className="bg-primary min-h-screen pb-32">
+      <SEO 
+        title="Contact" 
+        description="Connect with Yallanuru Revanth Kumar, FullStack Web Developer. Reach out for collaborations, project inquiries, or modern technology development."
+        keywords={['Contact Developer', 'Hire React Developer', 'Tirupati Web Developer', 'YRK Contact']}
+      />
        {/* Background accents */}
       <div className="absolute top-0 left-0 w-full h-[600px] bg-accent/5 blur-[120px] pointer-events-none" />
 

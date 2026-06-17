@@ -5,6 +5,7 @@ import { ExternalLink, Github, Search, Filter, Layers, ArrowRight, MousePointer2
 import { cn } from '@/src/lib/utils';
 import { Link } from 'react-router-dom';
 import LazyImage from '@/src/components/LazyImage';
+import SEO from '@/src/components/SEO';
 
 export default function Projects() {
   const { data: portfolioData } = usePortfolio();
@@ -22,6 +23,11 @@ export default function Projects() {
 
   return (
     <div className="bg-primary min-h-screen pb-32">
+      <SEO 
+        title="Projects" 
+        description="Explore the case studies, web development projects, SaaS builds, and tech applications crafted by Yallanuru Revanth Kumar."
+        keywords={['React Projects', 'Web Apps', 'Software engineering portfolio', 'SaaS applications']}
+      />
       {/* Immersive Header */}
       <section className="relative pt-32 pb-16 md:pb-20 px-6 overflow-hidden">
         <div className="absolute top-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-accent/5 blur-[120px] rounded-full -z-10" />
@@ -100,7 +106,7 @@ export default function Projects() {
                    <div className="relative aspect-[16/10] overflow-hidden">
                         <LazyImage 
                             src={project.image} 
-                            alt={project.title} 
+                            alt={project.title} category={project.category} 
                             wrapperClassName="w-full h-full"
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 opacity-60"
                         />

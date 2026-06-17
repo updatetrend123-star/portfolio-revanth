@@ -40,7 +40,7 @@ export default function Navbar() {
         isScrolled ? 'bg-primary/70 backdrop-blur-xl border border-white/10 shadow-2xl' : 'bg-transparent'
       )}>
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center text-primary font-black text-xl group-hover:rotate-12 transition-transform shadow-lg shadow-accent/20">
+          <div className="w-12 h-10 rounded-xl bg-accent flex items-center justify-center text-primary font-black text-xl group-hover:rotate-12 transition-transform shadow-lg shadow-accent/20">
             YRK
           </div>
           <span className="font-bold text-xl tracking-tight hidden sm:block">

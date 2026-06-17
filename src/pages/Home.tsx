@@ -3,6 +3,7 @@ import Hero3D from '@/src/components/3d/Hero3D';
 import FloatingIcons from '@/src/components/FloatingIcons';
 import { usePortfolio } from '@/src/context/PortfolioContext';
 import heroBackground from '@/src/assets/images/hero_background_1781600758179.jpg';
+import SEO from '@/src/components/SEO';
 import { 
   ArrowRight, 
   Code2, 
@@ -69,6 +70,7 @@ export default function Home() {
 
   return (
     <div className="relative overflow-hidden">
+      <SEO />
       {/* Immersive Hero Section */}
       <section className="relative min-h-[100vh] flex items-center px-4 md:px-8 py-20">
         {/* Ambient Tech Background Image */}
@@ -320,7 +322,7 @@ export default function Home() {
               >
                 <LazyImage
                   src={project.image}
-                  alt={project.title}
+                  alt={project.title} category={project.category}
                   wrapperClassName="w-full h-full"
                   className="w-full h-full object-cover opacity-50 group-hover:scale-110 group-hover:opacity-70 transition-all duration-1000 ease-out"
                 />
@@ -405,7 +407,7 @@ export default function Home() {
                   {test.avatar ? (
                     <LazyImage 
                       src={test.avatar} 
-                      alt={test.author}
+                      alt={test.author} category="testimonial"
                       wrapperClassName="w-12 h-12 rounded-2xl shrink-0 shadow-lg"
                       className="w-full h-full object-cover" 
                     />
