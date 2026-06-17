@@ -141,8 +141,8 @@ export default function Home() {
                 <ArrowRight className="group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
-                href={portfolioData.personal.resumeUrl}
-                download
+                href={portfolioData.personal.resumeUrl || "/reventh_kumar_resume.pdf"}
+                download="reventh_kumar_resume.pdf"
                 className="w-full sm:w-auto px-10 py-5 glass-panel rounded-2xl font-black text-lg flex items-center justify-center gap-3 hover:bg-white/10 transition-all border border-white/20 hover:scale-105 active:scale-95 group"
               >
                 Download My CV

@@ -88,6 +88,7 @@ export async function updatePersonal(data: any) {
   delete cleanedData.id;
 
   db.personal = {
+    ...(db.personal || {}),
     ...cleanedData,
     _id: 'main',
     id: 'main',
