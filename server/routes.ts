@@ -15,6 +15,7 @@ import {
 } from './controllers/PortfolioController';
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
+import { alertNewMessage } from './services/notifier';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
@@ -76,6 +77,21 @@ router.post('/experience', auth, updateExperience);
 router.post('/upload', auth, upload.single('file'), (req: any, res) => {
   if (!req.file) return res.status(400).send('No file uploaded');
   res.json({ url: `/uploads/${req.file.filename}` });
+});
+
+// Contact triggers
+router.post('/contact/notify', async (req: any, res: any) => {
+  try {
+    const { id, name, email, message } = req.body;
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'Missing required message parameters' });
+    }
+    const result = await alertNewMessage({ id, name, email, message });
+    res.json({ ...result, success: true });
+  } catch (error) {
+    console.error('Failed to process message notification webhook:', error);
+    res.status(500).json({ error: 'Failed to process message notification' });
+  }
 });
 
 export default router;

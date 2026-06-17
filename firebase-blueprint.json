@@ -99,6 +99,18 @@
         "name": { "type": "string" }
       },
       "required": ["email", "password"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Contact form message submission",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "email", "message"]
     }
   },
   "firestore": {
@@ -129,6 +141,10 @@
     "users": {
       "schema": "User",
       "description": "Registered admins for dashboard operations"
+    },
+    "messages": {
+      "schema": "Message",
+      "description": "Collection of visitor-submitted contact messages"
     }
   }
 }

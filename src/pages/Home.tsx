@@ -34,6 +34,7 @@ import {
 import { Link } from 'react-router-dom';
 import LazyImage from '@/src/components/LazyImage';
 import { cn } from '@/src/lib/utils';
+import { downloadFile } from '@/src/utils/download';
 import * as Icons from 'lucide-react';
 
 const LucideIcon = ({ name, size = 24, className = "" }: { name: string, size?: number, className?: string }) => {
@@ -140,14 +141,16 @@ export default function Home() {
                 See Projects
                 <ArrowRight className="group-hover:translate-x-1 transition-transform" />
               </Link>
-              <a
-                href={portfolioData.personal.resumeUrl || "/reventh_kumar_resume.pdf"}
-                download="reventh_kumar_resume.pdf"
-                className="w-full sm:w-auto px-10 py-5 glass-panel rounded-2xl font-black text-lg flex items-center justify-center gap-3 hover:bg-white/10 transition-all border border-white/20 hover:scale-105 active:scale-95 group"
+              <button
+                onClick={() => {
+                  const url = portfolioData?.personal?.resumeUrl || "/revanth_kumar_resume.pdf";
+                  downloadFile(url, 'revanth_kumar_resume.pdf');
+                }}
+                className="w-full sm:w-auto px-10 py-5 glass-panel rounded-2xl font-black text-lg flex items-center justify-center gap-3 hover:bg-white/10 transition-all border border-white/20 hover:scale-105 active:scale-95 group cursor-pointer"
               >
                 Download My CV
                 <Download size={20} className="group-hover:translate-y-1 transition-transform" />
-              </a>
+              </button>
             </div>
           </motion.div>
         </div>

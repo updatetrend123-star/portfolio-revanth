@@ -41,7 +41,7 @@ export default function Navbar() {
       )}>
         <Link to="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center text-primary font-black text-xl group-hover:rotate-12 transition-transform shadow-lg shadow-accent/20">
-            YR
+            YRK
           </div>
           <span className="font-bold text-xl tracking-tight hidden sm:block">
             Revanth
@@ -107,7 +107,7 @@ export default function Navbar() {
             className="fixed top-0 right-0 bottom-0 w-[80%] max-w-sm bg-primary border-l border-white/10 z-50 md:hidden p-10 flex flex-col gap-8 shadow-2xl"
           >
             <div className="flex justify-between items-center mb-10">
-                <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center text-primary font-black text-2xl">YR</div>
+                <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center text-primary font-black text-2xl">YRK</div>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-beige/50 hover:text-accent">
                     <X size={32} />
                 </button>

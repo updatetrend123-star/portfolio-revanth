@@ -19,6 +19,14 @@ service cloud.firestore {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
+    function isValidMessage(data) {
+      return data.keys().hasAll(['name', 'email', 'message', 'createdAt'])
+          && data.keys().size() == 4
+          && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+          && data.email is string && data.email.size() > 0 && data.email.size() <= 250
+          && data.message is string && data.message.size() > 0 && data.message.size() <= 5000;
+    }
+
     // 2. Personal Profile rules
     match /personal/{docId} {
       allow read: if true;
@@ -60,6 +68,12 @@ service cloud.firestore {
       allow read: if isSignedIn() && request.auth.uid == userId;
       allow create: if true; // to bootstrap admin accounts
       allow update, delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // 9. Messages rules
+    match /messages/{messageId} {
+      allow create: if isValidMessage(request.resource.data);
+      allow read, update, delete: if isAdmin();
     }
   }
 }

@@ -3,6 +3,9 @@ import { motion } from 'motion/react';
 import { usePortfolio } from '@/src/context/PortfolioContext';
 import { Send, Mail, MapPin, Phone, Github, Linkedin, Instagram, ArrowRight, Loader2, MessageCircle } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
+import { db } from '@/src/lib/firebase';
+import { collection, addDoc } from 'firebase/firestore';
+import { toast } from 'sonner';
 
 export default function Contact() {
   const { data: portfolioData } = usePortfolio();
@@ -13,9 +16,39 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    setSubmitted(true);
+    try {
+      // 1. Save contact message to Firebase (Firestore)
+      const docRef = await addDoc(collection(db, 'messages'), {
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+        createdAt: new Date().toISOString()
+      });
+
+      // 2. Trigger backend notification (acts like a Firebase Cloud Function trigger)
+      try {
+        await fetch('/api/contact/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: docRef.id,
+            name: formData.name,
+            email: formData.email,
+            message: formData.message
+          })
+        });
+      } catch (err) {
+        console.warn('Express notification dispatch failed:', err);
+      }
+
+      setIsSubmitting(false);
+      setSubmitted(true);
+      setFormData({ name: '', email: '', message: '' });
+    } catch (err) {
+      console.error('Failed to save message to Firebase:', err);
+      toast.error('Could not transmit your message. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   return (

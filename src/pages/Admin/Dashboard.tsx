@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   BarChart2, 
@@ -33,7 +33,9 @@ import {
   X,
   Upload,
   Lightbulb,
-  Github
+  Github,
+  Cpu,
+  Briefcase
 } from 'lucide-react';
 import { useAuth } from '@/src/context/AuthContext';
 import { usePortfolio } from '@/src/context/PortfolioContext';
@@ -50,6 +52,9 @@ import {
 } from 'recharts';
 import { cn } from '@/src/lib/utils';
 import { toast } from 'sonner';
+import { downloadFile } from '@/src/utils/download';
+import { collection, query, orderBy, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { db } from '@/src/lib/firebase';
 import ProjectModal from '@/src/components/admin/ProjectModal';
 import TestimonialModal from '@/src/components/admin/TestimonialModal';
 import ExperienceModal from '@/src/components/admin/ExperienceModal';
@@ -106,6 +111,45 @@ export default function AdminDashboard() {
   }
 
   const [activeTab, setActiveTab] = useState('Overview');
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+
+  const fetchMessages = async () => {
+    setLoadingMessages(true);
+    try {
+      const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+      const list: any[] = [];
+      snap.forEach(d => {
+        list.push({ ...d.data(), _id: d.id });
+      });
+      setMessages(list);
+    } catch (err) {
+      console.error('Failed to fetch messages from Firestore:', err);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
+  const handleDeleteMessage = (msgId: string) => {
+    askConfirm('Are you absolutely sure you want to purge this contact message?', async () => {
+      try {
+        await deleteDoc(doc(db, 'messages', msgId));
+        setMessages(prev => prev.filter(m => m._id !== msgId));
+        toast.success('Message purged from database');
+      } catch (err) {
+        console.error('Failed to purge message from Firestore:', err);
+        toast.error('Could not complete deletion request');
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (activeTab === 'Messages') {
+      fetchMessages();
+    }
+  }, [activeTab]);
+
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
   const [isTestimonialModalOpen, setIsTestimonialModalOpen] = useState(false);
@@ -182,9 +226,11 @@ export default function AdminDashboard() {
     { id: 'Overview', icon: <BarChart2 size={18} /> },
     { id: 'Projects', icon: <Layers size={18} /> },
     { id: 'Testimonials', icon: <Users size={18} /> },
+    { id: 'Services', icon: <Cpu size={18} /> },
+    { id: 'Experiences', icon: <Briefcase size={18} /> },
     { id: 'Content', icon: <FileText size={18} /> },
     { id: 'Contacts', icon: <Smartphone size={18} /> },
-    { id: 'Settings', icon: <Settings size={18} /> },
+    { id: 'Messages', icon: <MessageSquare size={18} /> },
   ];
 
   return (
@@ -193,8 +239,8 @@ export default function AdminDashboard() {
       <aside className="w-full lg:w-72 bg-primary border-b lg:border-b-0 lg:border-r border-white/5 p-6 lg:p-8 flex flex-col gap-10 shrink-0 sticky top-0 lg:h-screen z-40 backdrop-blur-xl">
         <div className="flex items-center justify-between lg:justify-start lg:gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center text-primary font-black text-xl shadow-lg shadow-accent/20">YR</div>
-            <span className="font-bold text-xl tracking-tight">YR Console</span>
+            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center text-primary font-black text-xl shadow-lg shadow-accent/20">YRK</div>
+            <span className="font-bold text-xl tracking-tight">YRK Console</span>
           </div>
           <button className="lg:hidden p-2 text-beige/50" onClick={logout}><LogOut size={20}/></button>
         </div>
@@ -279,72 +325,115 @@ export default function AdminDashboard() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-12"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat, i) => (
-                  <div key={i} className="glass-panel p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-accent/30 transition-all">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity translate-x-4 -translate-y-4">
-                      {stat.icon}
-                    </div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-beige/40 mb-6">{stat.label}</div>
-                    <div className="text-4xl font-black mb-3">{stat.value}</div>
-                    <div className="flex items-center gap-2 text-xs font-bold text-accent">
-                      <TrendingUp size={14} />
-                      {stat.trend} VS LAST MONTH
-                    </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl">
+                <div className="glass-panel p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-accent/30 transition-all">
+                  <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity translate-x-4 -translate-y-4 text-accent">
+                    <Layers size={48} />
                   </div>
-                ))}
+                  <div className="text-[10px] font-black uppercase tracking-widest text-beige/40 mb-6">Total Projects</div>
+                  <div className="text-4xl font-black mb-3">{portfolioData?.projects?.length || 0}</div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-accent">
+                    Active on Nexus Grid
+                  </div>
+                </div>
+
+                <div className="glass-panel p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-accent/30 transition-all">
+                  <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity translate-x-4 -translate-y-4 text-accent">
+                    <Users size={48} />
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-beige/40 mb-6">Testimonials Count</div>
+                  <div className="text-4xl font-black mb-3">{portfolioData?.testimonials?.length || 0}</div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-accent">
+                    Endorsed Stakeholders
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
-                <div className="glass-panel p-8 sm:p-12 rounded-[3.5rem]">
-                  <div className="flex items-center justify-between mb-10">
-                    <div>
-                      <h3 className="text-2xl font-black mb-1">Engagement Matrix</h3>
-                      <p className="text-beige/40 text-xs font-bold uppercase tracking-widest">Real-time Node Activity</p>
+              {/* Resume Management Component */}
+              <div className="glass-panel p-10 sm:p-16 rounded-[4rem] border-white/5 max-w-4xl">
+                 <div className="mb-10">
+                    <h3 className="text-2xl font-black mb-2">Resumé Management</h3>
+                    <p className="text-beige/45 text-sm">Upload, download, or revoke the primary PDF document resource served on your public profile card.</p>
+                 </div>
+                 
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-8 bg-white/5 rounded-[2.5rem] border border-white/5 gap-6">
+                    <div className="space-y-2 min-w-0">
+                       <div className="text-lg font-bold text-beige leading-snug-truncate font-sans">Resumé Archive (PDF)</div>
+                       <p className="text-beige/35 text-xs font-medium font-mono truncate max-w-xs sm:max-w-md">
+                         {portfolioData?.personal?.resumeUrl ? portfolioData.personal.resumeUrl : 'No document currently uploaded'}
+                       </p>
                     </div>
-                    <Activity className="text-accent" />
-                  </div>
-                  <div className="h-[300px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={analyticsData}>
-                        <defs>
-                          <linearGradient id="colorEngage" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#A7AA63" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#A7AA63" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                        <XAxis dataKey="name" stroke="#ffffff10" fontSize={10} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#ffffff10" fontSize={10} tickLine={false} axisLine={false} />
-                        <Tooltip 
-                          contentStyle={{ backgroundColor: '#0d1213', border: '1px solid #ffffff10', borderRadius: '24px', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}
-                          itemStyle={{ color: '#A7AA63' }}
-                        />
-                        <Area type="monotone" dataKey="engagement" stroke="#A7AA63" fillOpacity={1} fill="url(#colorEngage)" strokeWidth={4} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <div className="glass-panel p-8 sm:p-12 rounded-[3.5rem]">
-                   <h3 className="text-2xl font-black mb-10">System Status</h3>
-                   <div className="space-y-6">
-                      {[
-                        { label: 'Cloud Infrastructure', status: 'Optimal', icon: <Globe className="text-accent" /> },
-                        { label: 'Database Sync', status: 'Active', icon: <Layers className="text-accent" /> },
-                        { label: 'Security Firewall', status: 'Locked', icon: <ShieldCheck className="text-accent" /> },
-                        { label: 'API Endpoints', status: 'Ready', icon: <Activity className="text-accent" /> }
-                      ].map((item, i) => (
-                        <div key={i} className="flex items-center justify-between p-6 bg-white/5 rounded-3xl border border-white/5">
-                           <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center">{item.icon}</div>
-                              <div className="font-bold">{item.label}</div>
-                           </div>
-                           <div className="px-4 py-2 bg-green-500/10 text-green-500 rounded-xl text-[10px] font-black uppercase tracking-widest">{item.status}</div>
-                        </div>
-                      ))}
-                   </div>
-                </div>
+                    <div className="flex flex-wrap items-center gap-3 shrink-0">
+                      <input
+                        type="file"
+                        id="resume-file-input"
+                        accept=".pdf"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          
+                          const toastId = toast.loading('Uploading resumé...');
+                          try {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            
+                            const token = localStorage.getItem('token');
+                            const response = await fetch('/api/upload', {
+                              method: 'POST',
+                              headers: {
+                                'Authorization': `Bearer ${token}`
+                              },
+                              body: formData
+                            });
+                            
+                            if (response.ok) {
+                              const result = await response.json();
+                              await updatePersonal({ resumeUrl: result.url });
+                              toast.success('Resumé uploaded successfully!', { id: toastId });
+                            } else {
+                              toast.error('Failed to upload resumé', { id: toastId });
+                            }
+                          } catch (err) {
+                            console.error(err);
+                            toast.error('Error uploading resumé file', { id: toastId });
+                          }
+                        }}
+                      />
+                      <button 
+                        onClick={() => document.getElementById('resume-file-input')?.click()}
+                        className="px-6 py-4 bg-accent text-primary rounded-2xl font-black text-xs uppercase tracking-widest hover:shadow-xl hover:shadow-accent/20 transition-all flex items-center gap-2 cursor-pointer"
+                      >
+                        <Upload size={14} />
+                        Upload PDF
+                      </button>
+                      {portfolioData?.personal?.resumeUrl && (
+                        <>
+                          <button 
+                            onClick={() => {
+                              downloadFile(portfolioData.personal.resumeUrl, 'revanth_kumar_resume.pdf');
+                            }}
+                            className="px-6 py-4 bg-white/10 hover:bg-white/20 text-beige rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer"
+                          >
+                            <FileText size={14} />
+                            Download
+                          </button>
+                          <button 
+                            onClick={async () => {
+                                askConfirm('Are you sure you want to remove the current resumé?', async () => {
+                                  await updatePersonal({ resumeUrl: '' });
+                                  toast.success('Resumé removed from profile');
+                                });
+                            }}
+                            className="p-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl transition-all flex items-center justify-center cursor-pointer"
+                            title="Remove Resumé"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                 </div>
               </div>
             </motion.div>
           )}
@@ -642,10 +731,21 @@ export default function AdminDashboard() {
                   </div>
                </div>
 
+            </motion.div>
+          )}
+
+          {activeTab === 'Services' && (
+            <motion.div 
+              key="services"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-12 max-w-4xl"
+            >
                {/* Services Manager */}
-               <div className="glass-panel p-10 lg:p-16 rounded-[4rem] border-white/5">
+               <div className="glass-panel p-10 lg:p-16 rounded-[4rem] border-white/5 font-sans">
                   <div className="flex items-center justify-between mb-10">
-                    <h3 className="text-2xl font-black">Service Ecosystem</h3>
+                    <h3 className="text-2xl font-black text-beige mb-1">Service Ecosystem</h3>
                     <button 
                       onClick={() => {
                         askPrompt('Service Title:', '', (title) => {
@@ -655,7 +755,7 @@ export default function AdminDashboard() {
                             tagline: 'New dynamic service',
                             description: 'Service description goes here...',
                             features: ['Feature 1'],
-                            color: 'from-primary to-accent',
+                            color: 'from-accent/20 to-accent/40',
                             highlighted: false,
                             icon: 'Cpu'
                           };
@@ -663,7 +763,7 @@ export default function AdminDashboard() {
                           toast.success('Service node established');
                         });
                       }}
-                      className="px-6 py-3 bg-accent text-primary rounded-xl font-bold text-xs uppercase tracking-widest transition-all"
+                      className="px-6 py-3 bg-accent text-primary rounded-xl font-bold text-xs uppercase tracking-widest transition-all cursor-pointer"
                     >
                       New Service
                     </button>
@@ -680,7 +780,7 @@ export default function AdminDashboard() {
                                   updateServices(newServices);
                                 });
                               }}
-                              className="p-3 bg-white/5 rounded-xl hover:text-accent transition-colors"
+                              className="p-3 bg-white/5 rounded-xl hover:text-accent transition-colors cursor-pointer"
                            >
                             <Edit3 size={16} />
                            </button>
@@ -690,17 +790,17 @@ export default function AdminDashboard() {
                                   updateServices(portfolioData.services.filter(s => s.id !== service.id));
                                 });
                               }}
-                              className="p-3 bg-white/5 rounded-xl hover:text-red-500 transition-colors"
+                              className="p-3 bg-white/5 rounded-xl hover:text-red-500 transition-colors cursor-pointer"
                            >
                             <Trash2 size={16} />
                            </button>
                         </div>
                         <div className="flex items-center gap-6 mb-8">
-                           <div className={cn("w-16 h-16 rounded-2xl bg-gradient-to-br flex items-center justify-center text-primary shadow-xl", service.color)}>
+                           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/15 to-accent/5 flex items-center justify-center text-accent shadow-xl">
                               <LucideIcon name={service.icon} size={28} />
                            </div>
                            <div>
-                              <div className="font-black text-xl mb-1">{service.title}</div>
+                              <div className="font-black text-xl mb-1 text-beige">{service.title}</div>
                               <div className="text-accent text-[10px] font-black uppercase tracking-widest">{service.tagline}</div>
                            </div>
                         </div>
@@ -714,9 +814,74 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                </div>
+            </motion.div>
+          )}
 
-               {/* Experience Logic Manager - Simplified view */}
-                <div className="glass-panel p-10 lg:p-16 rounded-[4rem] border-white/5">
+          {activeTab === 'Experiences' && (
+            <motion.div 
+              key="experiences"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-12 max-w-4xl"
+            >
+               {/* Experience Logic Manager */}
+                <div className="glass-panel p-10 lg:p-16 rounded-[4rem] border-white/5 font-sans">
+                  <div className="flex items-center justify-between mb-10">
+                    <h3 className="text-2xl font-black text-beige">Experience Sequence</h3>
+                    <button 
+                      onClick={() => {
+                        setEditingExperience(null);
+                        setIsExperienceModalOpen(true);
+                      }}
+                      className="px-6 py-3 bg-accent text-primary rounded-xl font-bold text-xs uppercase tracking-widest transition-all cursor-pointer"
+                    >
+                      Add Experience
+                    </button>
+                  </div>
+                  <div className="space-y-6">
+                    {portfolioData.experience.map((exp) => (
+                      <div key={exp._id} className="p-8 bg-white/5 rounded-[3.5rem] border border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sm:gap-0 group hover:border-accent/30 transition-all">
+                         <div className="flex items-center gap-10">
+                            <div className="w-16 h-16 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center font-black text-accent text-2xl shrink-0">
+                                {exp.company[0]}
+                            </div>
+                            <div>
+                                <div className="font-black text-2xl mb-1 text-beige leading-tight">{exp.title}</div>
+                                <div className="text-beige/40 font-bold uppercase tracking-widest text-xs flex items-center gap-3">
+                                   {exp.company} <span className="w-1 h-1 bg-beige/20 rounded-full" /> {exp.period}
+                                </div>
+                            </div>
+                         </div>
+                         <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity self-end sm:self-auto">
+                            <button 
+                              onClick={() => {
+                                setEditingExperience(exp);
+                                setIsExperienceModalOpen(true);
+                              }}
+                              className="p-4 bg-white/5 rounded-2xl hover:text-accent transition-colors cursor-pointer"
+                            >
+                              <Edit3 size={20} />
+                            </button>
+                            <button 
+                              onClick={() => {
+                                askConfirm('Erase this experience?', () => {
+                                  updateExperience(portfolioData.experience.filter(e => e._id !== exp._id));
+                                });
+                              }}
+                              className="p-4 bg-white/5 rounded-2xl hover:text-red-500 transition-colors cursor-pointer"
+                            >
+                              <Trash2 size={20} />
+                            </button>
+                         </div>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+            </motion.div>
+          )}
+
+          {/* HIDDEN_RESIDUAL_BLOCK_START
                   <div className="flex items-center justify-between mb-10">
                     <h3 className="text-2xl font-black">Experience Sequence</h3>
                     <button 
@@ -770,6 +935,8 @@ export default function AdminDashboard() {
                </div>
             </motion.div>
           )}
+
+          HIDDEN_RESIDUAL_BLOCK_END */}
 
           {activeTab === 'Contacts' && (
             <motion.div 
@@ -842,6 +1009,86 @@ export default function AdminDashboard() {
             </motion.div>
           )}
 
+          {activeTab === 'Messages' && (
+            <motion.div 
+               key="messages"
+               initial={{ opacity: 0, x: 20 }}
+               animate={{ opacity: 1, x: 0 }}
+               exit={{ opacity: 0, x: -20 }}
+               className="max-w-4xl space-y-12"
+            >
+               <div className="glass-panel p-10 sm:p-16 rounded-[4rem] border-white/5 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-16 opacity-5 font-black text-[12rem] pointer-events-none">✉</div>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12">
+                    <div>
+                      <h3 className="text-3xl font-black mb-2">Message Ingestion Node</h3>
+                      <p className="text-beige/45 text-sm">Real-time visitor queries and transmission logs stored securely in cloud-hosted Firebase.</p>
+                    </div>
+                    <button 
+                      onClick={fetchMessages}
+                      disabled={loadingMessages}
+                      className="px-6 py-3 bg-white/5 hover:bg-white/10 active:scale-95 text-xs text-accent rounded-xl border border-white/5 transition-all font-black uppercase tracking-widest cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      {loadingMessages ? 'Syncing...' : 'Sync Messages'}
+                    </button>
+                  </div>
+
+                  {loadingMessages && messages.length === 0 ? (
+                    <div className="py-20 flex flex-col items-center justify-center gap-4">
+                      <motion.div 
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full"
+                      />
+                      <span className="text-xs text-beige/45 font-mono">Syncing Firestore Data...</span>
+                    </div>
+                  ) : messages.length === 0 ? (
+                    <div className="py-24 text-center glass-panel rounded-[3rem] bg-white/[0.01] border-white/5">
+                      <MessageSquare className="mx-auto text-beige/25 mb-6" size={48} />
+                      <h4 className="text-xl font-bold mb-2">No transmissions logged</h4>
+                      <p className="text-beige/45 text-sm max-w-sm mx-auto">When visitors populate the contact gateway, records populate here with atomic prompt triggers.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {messages.map((msg) => (
+                        <div key={msg._id} className="p-8 sm:p-10 bg-white/5 rounded-[2.5rem] border border-white/5 hover:border-accent/20 transition-all flex flex-col md:flex-row justify-between items-start gap-6 group">
+                          <div className="space-y-4 min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <span className="text-lg font-black text-beige leading-none">{msg.name}</span>
+                              <span className="text-[10px] font-mono bg-white/5 px-3 py-1 rounded-full text-beige/50 border border-white/5">{msg.email}</span>
+                            </div>
+                            
+                            <p className="text-beige/70 text-base leading-relaxed break-words whitespace-pre-wrap font-medium">
+                              {msg.message}
+                            </p>
+
+                            <div className="text-[10px] font-mono text-beige/30 flex items-center gap-2">
+                              <span>Received:</span>
+                              <span className="text-beige/40 font-medium font-mono">
+                                {msg.createdAt ? new Date(msg.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'Unknown Timestamp'}
+                              </span>
+                              <span className="text-beige/20">•</span>
+                              <span>ID:</span>
+                              <span className="text-beige/35 hover:text-accent font-medium select-all cursor-pointer font-mono">{msg._id}</span>
+                            </div>
+                          </div>
+
+                          <button 
+                            onClick={() => handleDeleteMessage(msg._id)}
+                            className="p-4 bg-red-500/10 hover:bg-red-500/25 md:opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-300 rounded-2xl transition-all cursor-pointer shrink-0 self-end md:self-start border border-red-500/10"
+                            title="Delete permanently from Firestore"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+               </div>
+            </motion.div>
+          )}
+
           {activeTab === 'Settings' && (
             <motion.div 
                key="settings"
@@ -907,18 +1154,29 @@ export default function AdminDashboard() {
                             Upload PDF
                           </button>
                           {portfolioData.personal.resumeUrl && (
-                            <button 
-                              onClick={async () => {
-                                  askConfirm('Are you sure you want to remove the current resumé?', async () => {
-                                    await updatePersonal({ resumeUrl: '' });
-                                    toast.success('Resumé removed from profile');
-                                  });
-                              }}
-                              className="px-6 py-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-3 cursor-pointer"
-                            >
-                              <Trash2 size={16} />
-                              Remove
-                            </button>
+                            <>
+                              <button 
+                                onClick={() => {
+                                  downloadFile(portfolioData.personal.resumeUrl, 'revanth_kumar_resume.pdf');
+                                }}
+                                className="px-8 py-4 bg-white/10 hover:bg-white/20 text-beige rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-3 cursor-pointer"
+                              >
+                                <FileText size={16} />
+                                Download PDF
+                              </button>
+                              <button 
+                                onClick={async () => {
+                                    askConfirm('Are you sure you want to remove the current resumé?', async () => {
+                                      await updatePersonal({ resumeUrl: '' });
+                                      toast.success('Resumé removed from profile');
+                                    });
+                                }}
+                                className="px-6 py-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-3 cursor-pointer"
+                              >
+                                <Trash2 size={16} />
+                                Remove
+                              </button>
+                            </>
                           )}
                         </div>
                      </div>

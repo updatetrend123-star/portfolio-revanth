@@ -42,7 +42,7 @@ export default function AdminLogin() {
         
         <div className="mb-12 text-center">
             <div className="w-16 h-16 bg-accent text-primary rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl font-black">
-                YR
+                YRK
             </div>
             <h1 className="text-3xl font-black mb-2 tracking-tight">Admin Portal</h1>
             <p className="text-beige/40 text-sm font-medium uppercase tracking-[0.2em]">Authorized Access Only</p>
