@@ -1,48 +1,41 @@
+import { toast } from 'sonner';
+
 /**
  * Utility to securely download resume or other PDF files
  * Prevents SPA HTML fallback downloads and handles downloads with high fail-safety
  */
 export async function downloadFile(url: string, defaultFilename: string = 'revanth_kumar_resume.pdf') {
-  const isRelative = !url.startsWith('http://') && !url.startsWith('https://');
-  
   // Extract clean filename from URL or use default
   const urlFilename = url.substring(url.lastIndexOf('/') + 1).split('?')[0];
   const filename = urlFilename && urlFilename.endsWith('.pdf') ? urlFilename : defaultFilename;
 
-  if (isRelative) {
-    // For local/relative assets on the same origin, native browser download is 100% reliable,
-    // avoids CORS, and works flawlessly without manual fetch / blob generation.
-    try {
-      const link = document.createElement('a');
-      link.href = url.startsWith('/') ? url : `/${url}`;
-      link.download = filename;
-      link.type = 'application/pdf';
-      link.rel = 'noopener noreferrer';
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      return true;
-    } catch (e) {
-      console.error('Relative native download fallback failed:', e);
-    }
-  }
+  // Resolve full path if relative to prevent incorrect routing
+  const fetchUrl = !url.startsWith('http://') && !url.startsWith('https://')
+    ? (url.startsWith('/') ? url : `/${url}`)
+    : url;
 
-  // For remote / absolute URLs (e.g. Firebase storage), we try fetching as a blob first 
-  // to enforce the download attribute. If CORS blocks it, we gracefully fallback
-  // to a safe target="_blank" window opening which forces download/preview without crashing or re-routing.
   try {
-    const response = await fetch(url);
+    const response = await fetch(fetchUrl, { method: 'GET' });
+    
     if (!response.ok) {
-      throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
+      throw new Error(`File is offline or not found (${response.status})`);
     }
 
     const contentType = response.headers.get('content-type');
+    
+    // Check if the server returned HTML content (which indicates SPA index.html fallback)
     if (contentType && contentType.includes('text/html')) {
-      throw new Error('Received HTML fallback page.');
+      throw new Error('Fallback page returned instead of actual PDF document.');
     }
 
+    // Convert response to a blob
     const blob = await response.blob();
+    
+    // Verify the safety of the downloaded content
+    if (blob.type && blob.type.includes('text/html')) {
+      throw new Error('Blob conversion resulted in an HTML document.');
+    }
+
     const pdfBlob = new Blob([blob], { type: 'application/pdf' });
     const objectUrl = window.URL.createObjectURL(pdfBlob);
     
@@ -59,19 +52,18 @@ export async function downloadFile(url: string, defaultFilename: string = 'revan
       window.URL.revokeObjectURL(objectUrl);
     }, 150);
     
+    // Success feedback
+    toast.success('CV downloaded successfully!');
     return true;
-  } catch (error) {
-    console.warn('CORS or Blob fetch failed. Falling back to native target="_blank" safe navigation:', error);
+  } catch (error: any) {
+    console.warn('PDF download failed. Checking fallback options:', error);
     
-    // Direct safe window opening that avoids popup blocker blocks
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
+    // Friendly, readable guidance to the end-user rather than downloading binary-distorted HTML
+    toast.info('Resume file is not available on Server. Upload a real PDF in the Admin Dashboard.', {
+      duration: 6000,
+    });
     
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
     return false;
   }
 }
+
